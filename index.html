@@ -31,7 +31,7 @@
   }
   h1,h2,h3,.brand,.btn,.choice-letter{font-family:'Baloo 2',sans-serif;}
 
-  /* ---------- Top bar ---------- */
+
   .topbar{
     display:flex;
     align-items:center;
@@ -113,7 +113,6 @@
   .dot-current{width:7px;height:7px;border-radius:50%;background:var(--coral);flex-shrink:0;}
   .dot-empty{width:16px;flex-shrink:0;}
 
-  /* ---------- Main ---------- */
   main{max-width:760px;margin:0 auto;padding:32px 22px 80px;}
 
   /* Home */
@@ -149,7 +148,7 @@
   .lesson-body p{margin:0 0 14px;}
   .placeholder-line{height:14px;background:var(--paper);border-radius:8px;margin-bottom:12px;border:1.5px dashed var(--line);}
 
-  /* Interactive lesson elements */
+
   details.lesson-section{
     background:var(--paper);border:2px solid var(--line);border-radius:14px;
     padding:2px 18px;margin-bottom:14px;
@@ -257,15 +256,14 @@
 <main id="main"></main>
 
 <script>
-/* =========================================================
-   EDIT ME: replace the placeholder lessons + quiz questions
-   below with your real content. Structure per topic:
-   - lessons: array of { title, content }  (content = HTML string)
-   - quiz: array of { question, choices: [4 strings], correct: index (0-3), explanation }
-   Add as many lessons/questions as you like — the app adapts.
-========================================================= */
-// Generates placeholder quiz questions — replace each entry's text later.
-// The app doesn't cap quiz length, so this can go higher or lower than 30 too.
+
+  //lessons + quiz questions
+  // below with your real content. Structure per topic:
+   //- lessons: array of { title, content }  (content = HTML string)
+   //- quiz: array of { question, choices: [4 strings], correct: index (0-3), explanation }
+   //Add as many lessons/questions as you like — the app adapts. basta ippakita din yung correct answer
+
+// gumawa lag kami ng questions which are 30 questions
 function makePlaceholderQuiz(n){
   const arr = [];
   for(let i=1;i<=n;i++){
@@ -639,9 +637,9 @@ const topics = [
   }
 ];
 
-/* ---------------- App state (resets on page reload) ---------------- */
+
 let state = {
-  view: "home",           // home | lesson | quiz | result
+  view: "home",           // home | lesson | quiz | result ito din ang main functons nya
   topicIndex: 0,
   lessonIndex: 0,
   quizIndex: 0,
@@ -649,7 +647,7 @@ let state = {
   submitted: false,
   score: 0,
   openTopic: 0,
-  completed: new Set()    // keys like "0-lesson-0", "0-quiz"
+  completed: new Set()   
 };
 
 const letters = ["A","B","C","D"];
@@ -793,7 +791,7 @@ function toggleTopic(i){
   renderDrawer();
 }
 
-/* ---------------- Rendering ---------------- */
+
 function renderDrawer(){
   const el = document.getElementById('drawerList');
   el.innerHTML = topics.map((t,ti)=>{
