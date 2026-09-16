@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Science Wormies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1F6EC;
+    --card:#FFFFFF;
+    --ink:#233021;
+    --ink-soft:#5B6B57;
+    --moss:#3F7255;
+    --moss-dark:#2C5940;
+    --coral:#E4572E;
+    --berry:#D6456C;
+    --sun:#F4B942;
+    --sky:#4F86C6;
+    --line:#DCE6D6;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Nunito',sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3,.brand,.btn,.choice-letter{font-family:'Baloo 2',sans-serif;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:16px 20px;
+    border-bottom:2px solid var(--line);
+    background:var(--paper);
+    position:sticky;
+    top:0;
+    z-index:20;
+  }
+  #menuBtn{
+    width:42px;height:42px;
+    border-radius:12px;
+    border:2px solid var(--ink);
+    background:var(--card);
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:5px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  #menuBtn span{width:20px;height:3px;background:var(--ink);border-radius:2px;}
+  #homeBtn{
+    width:42px;height:42px;
+    border-radius:12px;
+    border:2px solid var(--ink);
+    background:var(--card);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  #homeBtn:hover{background:var(--paper);}
+  .brand{font-weight:800;font-size:1.35rem;color:var(--moss-dark);}
+  .brand small{display:block;font-family:'Nunito';font-weight:600;font-size:.7rem;color:var(--ink-soft);letter-spacing:.02em;}
+
+  /* ---------- Drawer ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(35,48,33,.35);
+    opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:29;
+  }
+  .overlay.show{opacity:1;pointer-events:auto;}
+  #drawer{
+    position:fixed;top:0;left:0;height:100%;width:290px;
+    background:var(--card);
+    box-shadow:4px 0 24px rgba(35,48,33,.15);
+    transform:translateX(-105%);
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    z-index:30;
+    padding:22px 18px;
+    overflow-y:auto;
+  }
+  #drawer.open{transform:translateX(0);}
+  .drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .drawer-head span{font-family:'Baloo 2';font-weight:800;font-size:1.1rem;color:var(--moss-dark);}
+  #closeDrawer{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--ink-soft);line-height:1;}
+  .topic-block{margin-bottom:10px;border-radius:14px;overflow:hidden;}
+  .topic-head{
+    display:flex;align-items:center;gap:10px;
+    padding:12px 12px;
+    background:var(--paper);
+    cursor:pointer;
+    font-weight:700;
+  }
+  .topic-dot{width:9px;height:9px;border-radius:50%;background:var(--coral);flex-shrink:0;}
+  .topic-dot.inactive{background:transparent;border:2px solid var(--line);}
+  .topic-items{padding:4px 6px 8px 30px;display:none;}
+  .topic-items.show{display:block;}
+  .drawer-item{
+    display:flex;align-items:center;gap:8px;
+    padding:8px 6px;border-radius:8px;
+    font-size:.92rem;color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .drawer-item:hover{background:var(--paper);}
+  .drawer-item.current{color:var(--moss-dark);font-weight:800;}
+  .check{color:var(--moss);font-weight:800;width:16px;flex-shrink:0;}
+  .dot-current{width:7px;height:7px;border-radius:50%;background:var(--coral);flex-shrink:0;}
+  .dot-empty{width:16px;flex-shrink:0;}
+
+  /* ---------- Main ---------- */
+  main{max-width:760px;margin:0 auto;padding:32px 22px 80px;}
+
+  /* Home */
+  .hero{text-align:center;padding:20px 0 10px;}
+  .worm-wrap{position:relative;height:140px;margin-bottom:6px;}
+  .doodle{position:absolute;opacity:.55;}
+  .hero h1{font-size:2.5rem;margin:6px 0 4px;color:var(--moss-dark);}
+  .hero p{color:var(--ink-soft);font-size:1.05rem;max-width:460px;margin:0 auto 26px;}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--coral);color:#fff;border:none;
+    padding:14px 26px;border-radius:999px;font-size:1.05rem;font-weight:700;
+    cursor:pointer;box-shadow:0 6px 0 #b6421d;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 #b6421d;}
+  .btn.secondary{background:var(--sky);box-shadow:0 6px 0 #34618f;}
+  .btn.secondary:active{box-shadow:0 2px 0 #34618f;}
+  .topics-preview{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:34px;}
+  @media(max-width:520px){.topics-preview{grid-template-columns:1fr;}}
+  .preview-card{
+    background:var(--card);border:2px solid var(--line);border-radius:var(--radius);
+    padding:18px;text-align:left;cursor:pointer;transition:border-color .15s;
+  }
+  .preview-card:hover{border-color:var(--moss);}
+  .preview-card h3{margin:0 0 6px;color:var(--moss-dark);}
+  .preview-card p{margin:0;color:var(--ink-soft);font-size:.9rem;}
+
+  /* Lesson */
+  .crumb{color:var(--ink-soft);font-size:.85rem;font-weight:700;margin-bottom:6px;}
+  .lesson-card{background:var(--card);border-radius:var(--radius);padding:28px 26px;border:2px solid var(--line);}
+  .lesson-card h2{margin-top:0;color:var(--moss-dark);}
+  .lesson-body{line-height:1.75;color:var(--ink);}
+  .lesson-body p{margin:0 0 14px;}
+  .placeholder-line{height:14px;background:var(--paper);border-radius:8px;margin-bottom:12px;border:1.5px dashed var(--line);}
+
+  /* Interactive lesson elements */
+  details.lesson-section{
+    background:var(--paper);border:2px solid var(--line);border-radius:14px;
+    padding:2px 18px;margin-bottom:14px;
+  }
+  details.lesson-section[open]{border-color:var(--moss);}
+  details.lesson-section summary{
+    cursor:pointer;font-family:'Baloo 2';font-weight:700;font-size:1.08rem;
+    color:var(--moss-dark);padding:14px 0;list-style:none;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  details.lesson-section summary::-webkit-details-marker{display:none;}
+  details.lesson-section summary::after{content:'+';font-size:1.4rem;color:var(--ink-soft);}
+  details.lesson-section[open] summary::after{content:'\2212';}
+  details.lesson-section .section-body{padding-bottom:16px;}
+
+  .term-explorer{margin:6px 0 4px;}
+  .term-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .term-btn{
+    padding:9px 16px;border-radius:999px;border:2px solid var(--line);
+    background:var(--card);font-weight:700;cursor:pointer;color:var(--ink-soft);
+    font-family:'Nunito',sans-serif;font-size:.9rem;
+  }
+  .term-btn.active{border-color:var(--sky);color:var(--sky);background:#EAF2FA;}
+  .term-display{
+    background:var(--card);border:2px solid var(--line);border-radius:14px;
+    padding:16px 18px;min-height:70px;line-height:1.6;
+  }
+
+  .flip-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px;}
+  @media(max-width:520px){.flip-grid{grid-template-columns:1fr;}}
+  .flip-card{perspective:1000px;height:120px;cursor:pointer;}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d;}
+  .flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+  .flip-front,.flip-back{
+    position:absolute;inset:0;backface-visibility:hidden;
+    border-radius:14px;border:2px solid var(--line);
+    padding:14px;display:flex;align-items:center;justify-content:center;
+    text-align:center;font-weight:600;font-size:.92rem;
+  }
+  .flip-front{background:var(--paper);color:var(--ink);}
+  .flip-back{background:#E7F3EA;color:var(--moss-dark);transform:rotateY(180deg);}
+  .nav-row{display:flex;justify-content:space-between;margin-top:22px;}
+  .btn.ghost{background:transparent;color:var(--moss-dark);border:2px solid var(--moss);box-shadow:none;padding:11px 20px;}
+  .btn.ghost:active{transform:translateY(2px);}
+
+  /* Quiz */
+  .quiz-card{background:var(--card);border-radius:var(--radius);padding:26px;border:2px solid var(--line);}
+  .quiz-progress{font-size:.85rem;font-weight:700;color:var(--ink-soft);margin-bottom:6px;}
+  .question{font-size:1.2rem;font-weight:700;color:var(--ink);margin:6px 0 20px;}
+  .choice{
+    display:flex;align-items:center;gap:12px;
+    background:var(--paper);border:2px solid var(--line);
+    border-radius:14px;padding:13px 16px;margin-bottom:12px;
+    cursor:pointer;font-weight:600;
+  }
+  .choice-letter{
+    width:30px;height:30px;border-radius:50%;background:var(--card);
+    border:2px solid var(--line);display:flex;align-items:center;justify-content:center;
+    font-weight:800;color:var(--ink-soft);flex-shrink:0;
+  }
+  .choice.selected{border-color:var(--sky);background:#EAF2FA;}
+  .choice.selected .choice-letter{border-color:var(--sky);color:var(--sky);}
+  .choice.correct{border-color:var(--moss);background:#E7F3EA;}
+  .choice.correct .choice-letter{background:var(--moss);border-color:var(--moss);color:#fff;}
+  .choice.wrong{border-color:var(--berry);background:#FBEAEF;}
+  .choice.wrong .choice-letter{background:var(--berry);border-color:var(--berry);color:#fff;}
+  .choice.disabled{cursor:default;}
+  .feedback{margin-top:16px;padding:14px 16px;border-radius:12px;font-size:.95rem;line-height:1.5;}
+  .feedback.ok{background:#E7F3EA;color:var(--moss-dark);}
+  .feedback.no{background:#FBEAEF;color:#8f2f47;}
+  .quiz-actions{display:flex;justify-content:flex-end;margin-top:20px;}
+  .result-card{text-align:center;padding:36px 20px;}
+  .result-card h2{color:var(--moss-dark);font-size:2rem;}
+  .score-badge{
+    display:inline-block;background:var(--sun);color:#5a4405;font-weight:800;
+    padding:10px 22px;border-radius:999px;margin:14px 0 20px;font-size:1.1rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button id="menuBtn" aria-label="Open menu" onclick="toggleDrawer(true)">
+    <span></span><span></span><span></span>
+  </button>
+  <button id="homeBtn" aria-label="Go home" onclick="goHome()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 11.5 12 4l9 7.5"/>
+      <path d="M5.5 10v9.5a1 1 0 0 0 1 1H9.5v-6h5v6H17.5a1 1 0 0 0 1-1V10"/>
+    </svg>
+  </button>
+  <div class="brand">Science Wormies<small>learn a little every day</small></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleDrawer(false)"></div>
+
+<nav id="drawer">
+  <div class="drawer-head">
+    <span>Topics</span>
+    <button id="closeDrawer" onclick="toggleDrawer(false)">&times;</button>
+  </div>
+  <div id="drawerList"></div>
+</nav>
+
+<main id="main"></main>
+
+<script>
+/* =========================================================
+   EDIT ME: replace the placeholder lessons + quiz questions
+   below with your real content. Structure per topic:
+   - lessons: array of { title, content }  (content = HTML string)
+   - quiz: array of { question, choices: [4 strings], correct: index (0-3), explanation }
+   Add as many lessons/questions as you like — the app adapts.
+========================================================= */
+// Generates placeholder quiz questions — replace each entry's text later.
+// The app doesn't cap quiz length, so this can go higher or lower than 30 too.
+function makePlaceholderQuiz(n){
+  const arr = [];
+  for(let i=1;i<=n;i++){
+    arr.push({
+      question: `Sample question ${i}?`,
+      choices: ["Choice A","Choice B","Choice C","Choice D"],
+      correct: i % 4,
+      explanation: "Add the explanation for the correct answer here."
+    });
+  }
+  return arr;
+}
+
+const topics = [
+  {
+    title: "Chemistry in Everyday Life",
+    lessons: [
+      { title: "Lesson 1", content: `
+        <details class="lesson-section" open>
+          <summary>Classifications of Matter</summary>
+          <div class="section-body">
+            <p>Matter is divided into <strong>mixtures</strong> (varying composition) and <strong>pure substances</strong> (uniform composition). Tap a term to see what it means:</p>
+            <div class="term-explorer">
+              <div class="term-btns">
+                <button class="term-btn active" data-group="classifications" data-term="heterogeneous" onclick="showTerm('classifications','heterogeneous')">Heterogeneous Mixture</button>
+                <button class="term-btn" data-group="classifications" data-term="colloid" onclick="showTerm('classifications','colloid')">Colloid</button>
+                <button class="term-btn" data-group="classifications" data-term="homogeneous" onclick="showTerm('classifications','homogeneous')">Homogeneous (Solution)</button>
+                <button class="term-btn" data-group="classifications" data-term="element" onclick="showTerm('classifications','element')">Element</button>
+                <button class="term-btn" data-group="classifications" data-term="compound" onclick="showTerm('classifications','compound')">Compound</button>
+              </div>
+              <div id="termDisplay-classifications" class="term-display"><strong>Heterogeneous Mixture</strong> &mdash; a mixture in which the components can still be identified.<br><br><em>Example: Garden salad, trail mix of nuts</em></div>
+            </div>
+          </div>
+        </details>
+
+        <details class="lesson-section">
+          <summary>Phases of Matter</summary>
+          <div class="section-body">
+            <p>Tap a phase to see its definition and example:</p>
+            <div class="term-explorer">
+              <div class="term-btns">
+                <button class="term-btn active" data-group="phases" data-term="solid" onclick="showTerm('phases','solid')">Solid</button>
+                <button class="term-btn" data-group="phases" data-term="liquid" onclick="showTerm('phases','liquid')">Liquid</button>
+                <button class="term-btn" data-group="phases" data-term="gas" onclick="showTerm('phases','gas')">Gas</button>
+                <button class="term-btn" data-group="phases" data-term="plasma" onclick="showTerm('phases','plasma')">Plasma</button>
+              </div>
+              <div id="termDisplay-phases" class="term-display"><strong>Solid</strong> &mdash; has a defined appearance and its own shape, with very little to no molecular movement. A very rigid molecular structure.<br><br><em>Example: Diamond</em></div>
+            </div>
+          </div>
+        </details>
+
+        <details class="lesson-section">
+          <summary>Phase Transitions</summary>
+          <div class="section-body">
+            <p>Phase transitions happen when heat is introduced or removed. Adding heat increases energy and molecular movement; removing heat causes molecules to lose energy and compact together. Tap a transition to explore it:</p>
+            <div class="term-explorer">
+              <div class="term-btns">
+                <button class="term-btn active" data-group="transitions" data-term="melting" onclick="showTerm('transitions','melting')">Melting</button>
+                <button class="term-btn" data-group="transitions" data-term="evaporation" onclick="showTerm('transitions','evaporation')">Evaporation</button>
+                <button class="term-btn" data-group="transitions" data-term="ionization" onclick="showTerm('transitions','ionization')">Ionization</button>
+                <button class="term-btn" data-group="transitions" data-term="recombination" onclick="showTerm('transitions','recombination')">Recombination</button>
+                <button class="term-btn" data-group="transitions" data-term="condensation" onclick="showTerm('transitions','condensation')">Condensation</button>
+                <button class="term-btn" data-group="transitions" data-term="freezing" onclick="showTerm('transitions','freezing')">Freezing</button>
+                <button class="term-btn" data-group="transitions" data-term="sublimation" onclick="showTerm('transitions','sublimation')">Sublimation</button>
+                <button class="term-btn" data-group="transitions" data-term="deposition" onclick="showTerm('transitions','deposition')">Deposition</button>
+              </div>
+              <div id="termDisplay-transitions" class="term-display"><strong>Melting</strong> &mdash; adding heat to a solid, causing it to become a liquid.<br><br><em>Example: Scrap iron bars melted to be reformed into solid iron blocks</em></div>
+            </div>
+          </div>
+        </details>
+
+        <details class="lesson-section">
+          <summary>Properties of Matter</summary>
+          <div class="section-body">
+            <div class="term-explorer">
+              <div class="term-btns">
+                <button class="term-btn active" data-group="properties" data-term="physical" onclick="showTerm('properties','physical')">Physical</button>
+                <button class="term-btn" data-group="properties" data-term="chemical" onclick="showTerm('properties','chemical')">Chemical</button>
+                <button class="term-btn" data-group="properties" data-term="extensive" onclick="showTerm('properties','extensive')">Extensive</button>
+                <button class="term-btn" data-group="properties" data-term="intensive" onclick="showTerm('properties','intensive')">Intensive</button>
+              </div>
+              <div id="termDisplay-properties" class="term-display"><strong>Physical Property</strong> &mdash; can be quantified using measurements, or assessed by the five senses.<br><br><em>Example: Mass, color, length</em></div>
+            </div>
+          </div>
+        </details>
+
+        <details class="lesson-section">
+          <summary>Consumer Products</summary>
+          <div class="section-body">
+            <div class="term-explorer">
+              <div class="term-btns">
+                <button class="term-btn active" data-group="consumer" data-term="food" onclick="showTerm('consumer','food')">Food Additives</button>
+                <button class="term-btn" data-group="consumer" data-term="active" onclick="showTerm('consumer','active')">Active Ingredients</button>
+                <button class="term-btn" data-group="consumer" data-term="cleaning" onclick="showTerm('consumer','cleaning')">Cleaning Agents</button>
+                <button class="term-btn" data-group="consumer" data-term="cosmetics" onclick="showTerm('consumer','cosmetics')">Cosmetics</button>
+              </div>
+              <div id="termDisplay-consumer" class="term-display"><strong>Food Additives</strong> &mdash; substances added to food and/or beverages to improve flavor and appearance, and to preserve the food's natural taste.</div>
+            </div>
+          </div>
+        </details>
+
+        <h3>Quick check &mdash; tap a card to flip it</h3>
+        <div class="flip-grid">
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">Is milk a mixture or a pure substance?</div>
+              <div class="flip-back">Mixture &mdash; specifically a colloid.</div>
+            </div>
+          </div>
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">What happens during sublimation?</div>
+              <div class="flip-back">A solid turns directly into a gas &mdash; no liquid phase in between.</div>
+            </div>
+          </div>
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">Is temperature intensive or extensive?</div>
+              <div class="flip-back">Intensive &mdash; it doesn't depend on how much matter is present.</div>
+            </div>
+          </div>
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">What is plasma made up of?</div>
+              <div class="flip-back">Ions &mdash; formed when a gas absorbs enough energy to become charged.</div>
+            </div>
+          </div>
+        </div>
+      ` },
+      { title: "Lesson 2", content: `
+        <h3>Classifications of Cleaning Agents</h3>
+        <p><strong>Surfactants</strong>, or surface-active ingredients, are chemical agents that aid in cleaning surfaces that contain oil, stains, and dirt, which are usually not soluble in water. They include a hydrophilic (water-loving) polar head and a hydrophobic (water-fearing) nonpolar tail &mdash; the head interacts with polar molecules like water, while the tail is usually a hydrocarbon chain that attaches to nonpolar substances like oil.</p>
+        <p><strong>Bleaching agents</strong> are formulations that cause whitening or lightening to an affected substrate, by solubilizing color-producing substances or by altering their light-absorbing properties. These substances are usually oxidizing agents, such as hydrogen peroxide and chlorine.</p>
+        <p><strong>Disinfectants</strong> are substances made to lessen, if not eradicate, harmful microbes on surfaces. Sanitizers work in the same manner as disinfectants.</p>
+
+        <h3>Types of Cleaning Agents</h3>
+        <ol>
+          <li><strong>General-purpose cleaners</strong> are weakly alkaline and intended for a variety of uses. They generally contain alcohols, silicates, sodium carbonate, phosphates, and sodium EDTA.</li>
+          <li><strong>Bathroom cleaners</strong> are designed for surfaces like tubs, tiles, and toilet bowls. They can be acidic or alkaline depending on the surface &mdash; alkaline cleaners are best for floors, walls, and bathtubs since they preserve enamel finishes, while acidic cleaners can damage enamel. Some have added phosphoric or citric acid for rust and mineral deposits, and toilet bowl cleaners usually contain bleaching agents like hydrogen peroxide or hypochlorite.</li>
+          <li><strong>Special surface cleaners</strong> are designed for materials like glass, vinyl, carpets, and upholstery. Glass cleaners typically contain water, glycol ethers, ammonia, and alcohols. Carpet and upholstery cleaners come as liquid sprays or powders containing surfactants, foam stabilizers, alcohols, and/or glycol ethers &mdash; powders may also carry porous materials that trap dirt for easier vacuum removal.</li>
+          <li><strong>Stain and deposit removers</strong> remove spots, often with the help of abrasive materials like steel wools and brushes, though they're also sold as powders or pastes. These contain crystalline and amorphous silica, feldspar, clay, or chalk alongside surfactants, solvents, and enzymes, sometimes improved with sodium carbonate, bleaching agents, and oxalic acid.</li>
+        </ol>
+
+        <h3>Classifications of Cosmetics</h3>
+        <ol>
+          <li><strong>Lotions</strong> generally moisturize and soften the skin. They usually contain mineral oil, beeswax, preservatives, and perfumes or fragrances. Lotions high in hydrating ingredients are called moisturizers &mdash; they contain emollients that create a layer of oil on the skin, trapping moisture and keeping it hydrated.</li>
+          <li><strong>Deodorants</strong> prevent and remove unpleasant body smells. Available as liquids, powders, or sprays, they typically contain aluminum or zirconium compounds as active ingredients.</li>
+          <li><strong>Perfumes</strong> impart a fragrant odor and are usually made of aromatic oils, alcohol, and water.</li>
+          <li><strong>Shaving creams</strong> soften hair strands for easier removal, typically made up of stearic acid, mineral oils, water, perfume, and preservatives.</li>
+          <li><strong>Toothpaste</strong> cleanses and polishes teeth and freshens breath, containing polishing agents, surfactants, sweetener, and flavoring agents.</li>
+          <li><strong>Shampoos</strong> cleanse hair, with surfactants and antidandruff substances as their main ingredients, along with colors, perfumes, and preservatives.</li>
+          <li><strong>Skin whiteners</strong>, among the most popular products nowadays, contain bleaching or antioxidant substances like glutathione, methathione, hydroquinone, tretinoin, and kojic acid that inhibit melanin production in the skin.</li>
+        </ol>
+      ` }
+    ],
+    quiz: [
+      { question:"Which type of mixture has components that can still be identified?", choices:["Heterogeneous mixture", "Colloid", "Homogeneous mixture", "Compound"], correct:0, explanation:"A heterogeneous mixture has components that can still be identified." },
+      { question:"What is a colloid?", choices:["A pure element", "A mixture that appears homogeneous but is heterogeneous in tests", "A single atom", "A phase of matter"], correct:1, explanation:"A colloid has observed properties like a homogeneous mixture but is heterogeneous when tested." },
+      { question:"Which is an example of a homogeneous mixture given in the lesson?", choices:["Garden salad", "Trail mix", "Brine (saltwater)", "Diamond"], correct:2, explanation:"Brine (saltwater) is listed as an example of a homogeneous mixture." },
+      { question:"What is an element composed of?", choices:["Only one kind of atom", "Two or more elements", "Several mixtures", "Only molecules of water"], correct:0, explanation:"An element is composed of only one kind of atom." },
+      { question:"What is a compound?", choices:["A substance made of one kind of atom", "A substance made of molecules containing two or more elements", "A heterogeneous mixture", "A phase transition"], correct:1, explanation:"A compound is composed of molecules made up of two or more elements." },
+      { question:"Which phase has its own shape?", choices:["Liquid", "Gas", "Solid", "Plasma"], correct:2, explanation:"A solid has a defined appearance and its own shape." },
+      { question:"Which phase takes the shape of its container?", choices:["Liquid", "Solid", "Plasma", "Element"], correct:0, explanation:"A liquid has no shape of its own and takes the shape of its container." },
+      { question:"Which phase has very high molecular movement due to heat?", choices:["Solid", "Liquid", "Gas", "Plasma"], correct:3, explanation:"The lesson describes plasma as having very high molecular movement due to heat." },
+      { question:"What happens during melting?", choices:["A gas becomes a liquid", "A solid becomes a liquid", "A liquid becomes a solid", "A gas becomes plasma"], correct:1, explanation:"Melting adds heat to a solid, causing it to become a liquid." },
+      { question:"What happens during evaporation?", choices:["A liquid becomes a gas", "A gas becomes a solid", "A solid becomes a liquid", "Plasma becomes gas"], correct:0, explanation:"Evaporation adds heat to a liquid, turning it into a gas." },
+      { question:"What is ionization?", choices:["Removing heat from a liquid", "Adding heat to a gas and charging its molecules into ions", "Turning a solid directly into gas", "Turning gas into liquid"], correct:1, explanation:"Ionization adds heat to a gas and charges its molecules into ions." },
+      { question:"What is recombination?", choices:["Adding heat to a solid", "Removing heat from plasma so ions return to a gas", "Turning liquid into plasma", "Turning gas into solid"], correct:1, explanation:"Recombination removes heat from plasma, returning ions to a gaseous form." },
+      { question:"What is condensation?", choices:["Gas becoming liquid", "Liquid becoming gas", "Solid becoming gas", "Solid becoming plasma"], correct:0, explanation:"Condensation occurs when gas molecules lose energy and coalesce into a liquid." },
+      { question:"What is freezing?", choices:["Gas becoming liquid", "Liquid becoming solid", "Solid becoming gas", "Gas becoming plasma"], correct:1, explanation:"Freezing transfers heat from a liquid to the surroundings, forming a solid." },
+      { question:"What is sublimation?", choices:["Solid becoming gas without becoming liquid", "Gas becoming liquid", "Liquid becoming solid", "Gas becoming plasma"], correct:0, explanation:"Sublimation is a solid changing directly into a gas." },
+      { question:"What is deposition?", choices:["Liquid becoming gas", "Gas becoming solid", "Solid becoming liquid", "Plasma becoming gas"], correct:1, explanation:"Deposition is a gas reforming directly into a solid." },
+      { question:"Which is a physical property?", choices:["Flammability", "Toxicity", "Mass", "Enthalpy"], correct:2, explanation:"Mass is listed as a physical property." },
+      { question:"Which is a chemical property?", choices:["Color", "Length", "Temperature", "Flammability"], correct:3, explanation:"Flammability is listed as a chemical property." },
+      { question:"Which property is independent of the amount of material?", choices:["Extensive", "Intensive", "Chemical", "Mixture"], correct:1, explanation:"The lesson defines intensive properties as independent of the material's physical properties." },
+      { question:"Which is an extensive property?", choices:["Temperature", "Color", "Density", "Mass"], correct:3, explanation:"Mass is listed as an extensive property." },
+      { question:"What are food additives used for?", choices:["To create plasma", "To improve flavor and appearance and preserve food's natural taste", "To make metals heavier", "To remove all water"], correct:1, explanation:"Food additives improve flavor and appearance and help preserve food's natural taste." },
+      { question:"What are active ingredients?", choices:["Substances that are biologically active", "Only perfumes", "Only abrasives", "Only water"], correct:0, explanation:"Active ingredients are biologically active substances used mostly in drugs and some commodities." },
+      { question:"What do cleaning agents do?", choices:["Only add fragrance", "Remove dirt, dust, stains, clutter, and foul odor", "Create elements", "Change solids into plasma"], correct:1, explanation:"Cleaning agents are used to remove dirt, dust, stains, clutter, and foul odor." },
+      { question:"What is a purpose of cosmetics?", choices:["To create elements", "To enhance appearance and improve fragrance", "To cause nuclear fusion", "To freeze liquids"], correct:1, explanation:"The lesson defines cosmetics as substances that enhance appearance and improve fragrance." },
+      { question:"What do surfactants help clean?", choices:["Only pure water", "Surfaces containing oil, stains, and dirt", "Only gases", "Only metals"], correct:1, explanation:"Surfactants aid in cleaning surfaces containing oil, stains, and dirt that are usually not soluble in water." },
+      { question:"What part of a surfactant interacts with water?", choices:["Hydrophobic tail", "Hydrophilic polar head", "Abrasive core", "Silica crystal"], correct:1, explanation:"The hydrophilic polar head interacts with polar molecules like water." },
+      { question:"What does the hydrophobic tail usually attach to?", choices:["Water", "Nonpolar substances such as oil", "Ions in plasma", "Pure elements only"], correct:1, explanation:"The hydrophobic tail is usually a hydrocarbon chain that attaches to nonpolar substances like oil." },
+      { question:"What are bleaching agents generally?", choices:["Oxidizing agents", "Pure elements", "Surfactants only", "A type of plasma"], correct:0, explanation:"The lesson says bleaching agents are usually oxidizing agents such as hydrogen peroxide and chlorine." },
+      { question:"What is the purpose of disinfectants?", choices:["To add perfume", "To lessen or eradicate harmful microbes on surfaces", "To make food sweeter", "To create mixtures"], correct:1, explanation:"Disinfectants are made to lessen, if not eradicate, harmful microbes on surfaces." },
+      { question:"What are general-purpose cleaners generally like?", choices:["Weakly alkaline", "Always strongly acidic", "Always neutral", "Always gaseous"], correct:0, explanation:"General-purpose cleaners are described as weakly alkaline and intended for varied uses." },
+      { question:"Which product is described as cleansing hair?", choices:["Shampoo", "Perfume", "Lotions", "Deodorant"], correct:0, explanation:"Shampoos cleanse hair and commonly contain surfactants and antidandruff substances." },
+    ]
+  },
+  {
+    title: "The Origin of Elements",
+    lessons: [
+      { title: "Lesson 1", content: `
+        <details class="lesson-section" open>
+          <summary>Big Bang Nucleosynthesis</summary>
+          <div class="section-body">
+            <p>The Big Bang theory is the most dominant and highly supported theory of the origin of the universe. It states that the universe began in an explosion from an initial point, then expanded over billions of years to form the universe as we know it.</p>
+            <p>Big Bang Nucleosynthesis is the process believed to have taken place in the early moments of the universe, shortly after the initial expansion. It explains the creation of light elements in the intense heat of the early moments through <strong>nuclear fusion</strong> &mdash; a reaction in which two light nuclei (such as hydrogen) combine to form a heavier nucleus (such as helium), releasing excess binding energy in the process.</p>
+            <p>The early universe generated enough heat to trigger fusion that combined single protons (hydrogen) into lighter elements: helium, lithium, and beryllium. This also produced isotopes such as deuterium (a hydrogen variant containing a proton and a neutron in its nucleus).</p>
+            <p>Since the early universe was uniform everywhere, this process happened fairly evenly throughout space &mdash; which is why the distribution of elements is roughly the same no matter where we look.</p>
+            <p>The whole process lasted about 17 minutes: it began about 3 minutes into the universe's expansion and stopped about 20 minutes in, once the universe had cooled too much for fusion to continue.</p>
+          </div>
+        </details>
+
+        <details class="lesson-section">
+          <summary>Stellar Nucleosynthesis</summary>
+          <div class="section-body">
+            <p><strong>Stellar Nucleosynthesis</strong> is the process by which elements are created within stars, by combining the protons and neutrons in the nuclei of lighter elements. Tap a scientist to see what they contributed to the theory:</p>
+            <div class="term-explorer">
+              <div class="term-btns">
+                <button class="term-btn active" data-group="contributors" data-term="eddington" onclick="showTerm('contributors','eddington')">Eddington</button>
+                <button class="term-btn" data-group="contributors" data-term="gamow" onclick="showTerm('contributors','gamow')">Gamow</button>
+                <button class="term-btn" data-group="contributors" data-term="bethe" onclick="showTerm('contributors','bethe')">Bethe</button>
+                <button class="term-btn" data-group="contributors" data-term="hoyle" onclick="showTerm('contributors','hoyle')">Hoyle</button>
+                <button class="term-btn" data-group="contributors" data-term="cameron" onclick="showTerm('contributors','cameron')">Cameron & Clayton</button>
+              </div>
+              <div id="termDisplay-contributors" class="term-display"><strong>Arthur Eddington (1920)</strong> &mdash; the first to suggest that nuclear fusion reactions were taking place in stars.</div>
+            </div>
+          </div>
+        </details>
+
+        <details class="lesson-section">
+          <summary>Other Types of Nucleosynthesis</summary>
+          <div class="section-body">
+            <p>Apart from ordinary fusion during a star's lifetime, heavy elements can also form in other ways:</p>
+            <div class="term-explorer">
+              <div class="term-btns">
+                <button class="term-btn active" data-group="nucleoTypes" data-term="explosive" onclick="showTerm('nucleoTypes','explosive')">Explosive / Supernova</button>
+                <button class="term-btn" data-group="nucleoTypes" data-term="cosmicray" onclick="showTerm('nucleoTypes','cosmicray')">Cosmic Ray Spallation</button>
+              </div>
+              <div id="termDisplay-nucleoTypes" class="term-display"><strong>Explosive (Supernova) Nucleosynthesis</strong> &mdash; takes place during the explosion of a star. Elements such as silicon and nickel are formed through fast fusion.</div>
+            </div>
+          </div>
+        </details>
+
+        <details class="lesson-section">
+          <summary>Reaction Cycles: How Stars Build Heavy Elements</summary>
+          <div class="section-body">
+            <p>Stars build up heavier elements in stages. Tap each stage to see how it works:</p>
+            <div class="term-explorer">
+              <div class="term-btns">
+                <button class="term-btn active" data-group="reactionCycles" data-term="hydrogen" onclick="showTerm('reactionCycles','hydrogen')">Hydrogen Burning</button>
+                <button class="term-btn" data-group="reactionCycles" data-term="helium" onclick="showTerm('reactionCycles','helium')">Helium Burning</button>
+                <button class="term-btn" data-group="reactionCycles" data-term="heavier" onclick="showTerm('reactionCycles','heavier')">Heavier Elements</button>
+                <button class="term-btn" data-group="reactionCycles" data-term="beyond" onclick="showTerm('reactionCycles','beyond')">Beyond Iron</button>
+              </div>
+              <div id="termDisplay-reactionCycles" class="term-display"><strong>Hydrogen Burning</strong> &mdash; the first stage of stellar fusion, converting hydrogen into helium. In stars close to the Sun's mass, this happens through the proton-proton chain: two hydrogen atoms fuse into deuterium (releasing a positron and a neutrino), which fuses with another hydrogen to form Helium-3 and a gamma ray. Two Helium-3 nuclei then fuse into Helium-4, releasing two hydrogen atoms back. In more massive stars, hydrogen instead burns mainly through the CNO cycle, which uses carbon, nitrogen, and oxygen as catalysts to fuse four protons into a helium nucleus.</div>
+            </div>
+          </div>
+        </details>
+
+        <h3>Quick check &mdash; tap a card to flip it</h3>
+        <div class="flip-grid">
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">How long did Big Bang Nucleosynthesis last?</div>
+              <div class="flip-back">About 17 minutes &mdash; starting ~3 minutes in and ending ~20 minutes after the Big Bang.</div>
+            </div>
+          </div>
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">Who proposed the proton-proton cycle and the CNO cycle?</div>
+              <div class="flip-back">Hans Bethe, in 1939.</div>
+            </div>
+          </div>
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">What forms elements heavier than iron?</div>
+              <div class="flip-back">Neutron capture and proton capture, during a supernova explosion.</div>
+            </div>
+          </div>
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">What does the triple-alpha process produce?</div>
+              <div class="flip-back">Carbon-12, from the fusion of three helium-4 nuclei (via unstable beryllium-8).</div>
+            </div>
+          </div>
+        </div>
+      ` },
+      { title: "Lesson 2", content: `
+        <details class="lesson-section" open>
+          <summary>Protostars and Their Lives</summary>
+          <div class="section-body">
+            <p>Not every nebula ends up living the same star life. Tap a protostar type to see how its story unfolds:</p>
+            <div class="term-explorer">
+              <div class="term-btns">
+                <button class="term-btn active" data-group="protostars" data-term="alpha" onclick="showTerm('protostars','alpha')">Protostar &alpha;</button>
+                <button class="term-btn" data-group="protostars" data-term="beta" onclick="showTerm('protostars','beta')">Protostar &beta;</button>
+                <button class="term-btn" data-group="protostars" data-term="gamma" onclick="showTerm('protostars','gamma')">Protostar &gamma;</button>
+              </div>
+              <div id="termDisplay-protostars" class="term-display"><strong>Protostar &alpha; (Alpha)</strong> &mdash; some nebulae never finish becoming a star because a nearby, more massive star gets in the way. Jupiter is a good example &mdash; it's considered a "failed star" because its solid hydrogen core kept it from collecting enough gas to ever ignite fusion. If Jupiter had gathered more hydrogen, it could have become an alpha protostar, then a Brown Dwarf: a star with a mass between the smallest true stars and the densest gas giants. Brown dwarfs can't fuse hydrogen into other elements &mdash; instead they're thought to fuse hydrogen into deuterium, so their glow never reaches the visible spectrum.</div>
+            </div>
+          </div>
+        </details>
+
+        <details class="lesson-section">
+          <summary>Element Formation in High-Density Stars</summary>
+          <div class="section-body">
+            <p>In very dense stars, the proton-proton chain can branch further. Tap a chain to see how it works:</p>
+            <div class="term-explorer">
+              <div class="term-btns">
+                <button class="term-btn active" data-group="hydrogenChains" data-term="basic" onclick="showTerm('hydrogenChains','basic')">Basic Hydrogen Chain</button>
+                <button class="term-btn" data-group="hydrogenChains" data-term="advanced" onclick="showTerm('hydrogenChains','advanced')">Advanced Hydrogen Chain</button>
+              </div>
+              <div id="termDisplay-hydrogenChains" class="term-display"><strong>Basic Hydrogen Chain ("proton-proton")</strong> &mdash; some stars follow the standard proton-proton chain, but as soon as they form a helium-3 nucleus, it immediately fuses with more helium, releasing energy and creating beryllium. That beryllium is unstable, so it releases energy to settle into lithium instead. That lithium then fuses with another hydrogen atom, forming the helium that will go on to make beryllium again &mdash; and the cycle repeats.</div>
+            </div>
+          </div>
+        </details>
+
+        <h3>Quick check &mdash; tap a card to flip it</h3>
+        <div class="flip-grid">
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">Why is Jupiter considered a "failed star"?</div>
+              <div class="flip-back">Its solid hydrogen core kept it from collecting enough gas to ever ignite fusion.</div>
+            </div>
+          </div>
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">What's left behind after a gamma protostar's supernova?</div>
+              <div class="flip-back">A neutron star (\u2264 1.3 solar masses) or a black hole (above that limit).</div>
+            </div>
+          </div>
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">What is a white dwarf?</div>
+              <div class="flip-back">The leftover core of a main-sequence star, after its outer layers drift off as a planetary nebula.</div>
+            </div>
+          </div>
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-inner">
+              <div class="flip-front">In the advanced hydrogen chain, what does unstable boron release to settle down?</div>
+              <div class="flip-back">A positron, plus energy \u2014 turning it back into (an even less stable) beryllium.</div>
+            </div>
+          </div>
+        </div>
+      ` }
+    ],
+    quiz: [
+      { question:"What does the Big Bang theory describe?", choices:["The formation of cosmetics", "The beginning and expansion of the universe", "The freezing of matter", "The formation of Earth only"], correct:1, explanation:"The lesson describes the Big Bang theory as the theory that the universe began in an explosion and expanded." },
+      { question:"What is Big Bang Nucleosynthesis?", choices:["Creation of light elements in the early universe", "Formation of planets from rocks", "Evaporation of oceans", "Formation of cosmetics"], correct:0, explanation:"It describes the creation of light elements shortly after the universe began expanding." },
+      { question:"What reaction is central to Big Bang Nucleosynthesis?", choices:["Combustion", "Nuclear fusion", "Condensation", "Deposition"], correct:1, explanation:"The lesson explains that light elements formed through nuclear fusion." },
+      { question:"What happens in nuclear fusion?", choices:["Two light nuclei combine into a heavier nucleus", "A solid becomes a gas", "A gas becomes a liquid", "A mixture separates"], correct:0, explanation:"Nuclear fusion combines light nuclei into a heavier nucleus and releases excess binding energy." },
+      { question:"Which set contains light elements produced in the early universe according to the lesson?", choices:["Iron, gold, and uranium", "Helium, lithium, and beryllium", "Silicon, nickel, and iron", "Carbon, oxygen, and silicon"], correct:1, explanation:"The lesson names helium, lithium, and beryllium." },
+      { question:"What isotope of hydrogen is mentioned?", choices:["Carbon-12", "Deuterium", "Iron-56", "Helium-4"], correct:1, explanation:"Deuterium is a hydrogen variant containing a proton and a neutron." },
+      { question:"About how long did Big Bang Nucleosynthesis last?", choices:["About 17 minutes", "About 17 hours", "About 17 years", "About 17 billion years"], correct:0, explanation:"The lesson says it lasted about 17 minutes, from roughly 3 to 20 minutes after expansion began." },
+      { question:"Why did Big Bang Nucleosynthesis stop?", choices:["The universe became too cold for fusion to continue", "The universe became solid", "All matter disappeared", "Stars formed immediately"], correct:0, explanation:"The lesson says the universe cooled too much for fusion to continue." },
+      { question:"What is stellar nucleosynthesis?", choices:["Elements being created within stars", "Elements dissolving in water", "Cosmetics forming in laboratories", "Matter changing into plasma only"], correct:0, explanation:"Stellar nucleosynthesis is the creation of elements within stars by combining protons and neutrons." },
+      { question:"Who first suggested nuclear fusion reactions were taking place in stars?", choices:["Arthur Eddington", "Hans Bethe", "Fred Hoyle", "George Gamow"], correct:0, explanation:"The lesson credits Arthur Eddington in 1920." },
+      { question:"What did George Gamow contribute?", choices:["He developed the Gamow factor", "He discovered the CNO cycle", "He proposed planetary nebulae", "He created the Big Bang"], correct:0, explanation:"Gamow developed a formula called the Gamow factor to calculate the probability of fusion reactions in stars." },
+      { question:"What did Hans Bethe propose in 1939?", choices:["The proton-proton cycle and CNO cycle", "Cosmic ray spallation", "Planetary nebulae", "The triple-alpha process only"], correct:0, explanation:"Bethe proposed the proton-proton and CNO processes for converting hydrogen into helium." },
+      { question:"What did Fred Hoyle suggest?", choices:["Heavier nuclei such as carbon and iron form inside stars", "All elements formed in oceans", "Stars contain no fusion", "Cosmic rays create planets"], correct:0, explanation:"The lesson credits Hoyle with suggesting that heavier nuclei form inside stars." },
+      { question:"What did Cameron and Clayton do?", choices:["They corrected Hoyle's theory and explained later nucleosynthesis stages", "They discovered hydrogen", "They invented the Big Bang theory", "They discovered Jupiter"], correct:0, explanation:"The lesson says Cameron and Clayton made corrections to Hoyle's theory and explained later stages." },
+      { question:"What is explosive or supernova nucleosynthesis?", choices:["Element formation during a star's explosion", "Element formation in a glass of water", "Formation of a protostar only", "Formation of a planet"], correct:0, explanation:"It takes place during the explosion of a star." },
+      { question:"Which elements are given as examples formed through fast fusion in a supernova?", choices:["Silicon and nickel", "Hydrogen and deuterium", "Lithium and beryllium", "Gold and silver"], correct:0, explanation:"The lesson specifically gives silicon and nickel." },
+      { question:"What happens in cosmic ray spallation?", choices:["Fast protons or cosmic rays cause heavier nuclei to fragment", "Hydrogen becomes a liquid", "Stars stop producing energy", "Iron becomes hydrogen"], correct:0, explanation:"Cosmic rays collide with the interstellar medium and can fragment heavier nuclei." },
+      { question:"Which elements can become more abundant through cosmic ray spallation?", choices:["Beryllium, boron, and lithium", "Iron, nickel, and silicon", "Hydrogen, helium, and oxygen", "Gold, silver, and copper"], correct:0, explanation:"The lesson identifies beryllium, boron, and lithium." },
+      { question:"What is hydrogen burning?", choices:["The first stage of stellar fusion, converting hydrogen into helium", "The final stage of a supernova", "A cooling process", "Formation of a black hole"], correct:0, explanation:"Hydrogen burning is the first stage of stellar fusion." },
+      { question:"Which cycle mainly occurs in stars close to the Sun's mass?", choices:["Proton-proton chain", "CNO cycle", "Triple-alpha cycle", "Cosmic ray cycle"], correct:0, explanation:"The lesson says stars close to the Sun's mass use the proton-proton chain." },
+      { question:"Which cycle is mainly used by more massive stars to burn hydrogen?", choices:["CNO cycle", "Proton-proton chain only", "Deposition cycle", "Recombination cycle"], correct:0, explanation:"More massive stars mainly use the CNO cycle." },
+      { question:"What does the CNO cycle use as catalysts?", choices:["Carbon, nitrogen, and oxygen", "Iron, nickel, and silicon", "Gold, silver, and copper", "Hydrogen, lithium, and beryllium"], correct:0, explanation:"The CNO cycle uses carbon, nitrogen, and oxygen as catalysts." },
+      { question:"What is helium burning?", choices:["The second stage after most hydrogen is burned", "The first stage of the Big Bang", "A cooling process in planets", "The formation of plasma"], correct:0, explanation:"Helium burning begins once most of a star's hydrogen is burned." },
+      { question:"What does the triple-alpha process produce?", choices:["Carbon-12", "Hydrogen-1", "Iron only", "Beryllium-8 only"], correct:0, explanation:"Three helium-4 nuclei ultimately form carbon-12." },
+      { question:"What can further fusion form once carbon is present?", choices:["Neon, oxygen, and silicon", "Only hydrogen", "Only lithium", "Only deuterium"], correct:0, explanation:"The lesson states that further fusion can form neon, oxygen, and silicon." },
+      { question:"What can massive stars eventually form through heavier-element burning?", choices:["Elements up to iron", "Only hydrogen", "Only helium", "Only lithium"], correct:0, explanation:"Massive stars can fuse carbon, neon, oxygen, and silicon, eventually forming elements up to iron." },
+      { question:"Why can a star no longer sustain fusion once it produces iron?", choices:["Iron absorbs energy rather than releasing it", "Iron is a gas", "Iron evaporates instantly", "Iron is a mixture"], correct:0, explanation:"The lesson says iron absorbs energy rather than releasing it." },
+      { question:"What can remain after a massive star's collapse and supernova?", choices:["A neutron star or black hole", "A liquid planet", "A cloud of water", "A white dwarf in every case"], correct:0, explanation:"The lesson states that a supernova can leave a neutron star or, if massive enough, a black hole." },
+      { question:"Why is Jupiter called a 'failed star' in the lesson?", choices:["It did not collect enough gas to ignite fusion", "It is too hot for fusion", "It is made of iron", "It already exploded as a supernova"], correct:0, explanation:"The lesson says Jupiter's solid hydrogen core kept it from collecting enough gas to ignite fusion." },
+      { question:"What is a white dwarf?", choices:["The leftover core of a main-sequence star after its outer layers drift away", "A type of supernova", "A giant cloud of hydrogen", "A neutron star"], correct:0, explanation:"A white dwarf is the remaining core after outer layers drift off as a planetary nebula." },
+    ]
+  }
+];
+
+/* ---------------- App state (resets on page reload) ---------------- */
+let state = {
+  view: "home",           // home | lesson | quiz | result
+  topicIndex: 0,
+  lessonIndex: 0,
+  quizIndex: 0,
+  selected: null,
+  submitted: false,
+  score: 0,
+  openTopic: 0,
+  completed: new Set()    // keys like "0-lesson-0", "0-quiz"
+};
+
+const letters = ["A","B","C","D"];
+
+const termData = {
+  classifications: {
+    heterogeneous: { label:"Heterogeneous Mixture", def:"A mixture in which the components can still be identified.", example:"Garden salad, trail mix of nuts" },
+    colloid:        { label:"Colloid", def:"A mixture with observed properties as homogeneous, but heterogeneous when subjected to tests.", example:"Milk, styling gel" },
+    homogeneous:    { label:"Homogeneous Mixture (Solution)", def:"A mixture with a very uniform composition.", example:"Brine (saltwater), orange juice drink" },
+    element:        { label:"Element", def:"A substance composed of only one kind of atom.", example:"Ds (Darmstadtium), H (Hydrogen)" },
+    compound:       { label:"Compound", def:"A substance composed of molecules made up of 2 or more elements.", example:"Aqua Fortis (HNCO\u2083), Water (H\u2082O)" }
+  },
+  phases: {
+    solid:   { label:"Solid",   def:"Has a defined appearance and its own shape, with very little to no molecular movement. A very rigid molecular structure.", example:"Diamond" },
+    liquid:  { label:"Liquid",  def:"Has molecular movement, dictated by how fast it flows. It has no shape of its own and takes the shape of its container.", example:"A glass of lemon juice" },
+    gas:     { label:"Gas",     def:"Has high molecular movement, looser structure than a liquid, but behaves the same way as a liquid.", example:"The air we breathe" },
+    plasma:  { label:"Plasma",  def:"Has very high molecular movement due to heat, absorbing and releasing energy that makes its molecules move even faster. High temperature plasmas glow a certain color.", example:"Neon light fixtures in restaurants" }
+  },
+  transitions: {
+    melting:       { label:"Melting", def:"Adding heat to a solid, causing it to become a liquid.", example:"Scrap iron bars melted to be reformed into solid iron blocks" },
+    evaporation:   { label:"Evaporation", def:"Adding heat to a liquid, causing its loose molecular bonds to break further, turning it into a gas.", example:"Saltwater (NaCl (aq)) evaporated in a saltwater flat to extract salt \u2014 NaCl (aq) \u2192 NaCl + H\u2082O\u2191" },
+    ionization:    { label:"Ionization", def:"Adding heat to a gas, charging its molecules into ions (plasma is made up of ions).", example:"Energy added in a glass tube filled with Neon (Ne) makes the neon gas glow" },
+    recombination: { label:"Recombination", def:"Removing heat from a plasma, returning the ions to a ground state, becoming a gas. Also called deionization.", example:"Neon plasma deionizes back to its gaseous form once it begins to cool" },
+    condensation:  { label:"Condensation", def:"Transferring energy from gas molecules to the surrounding area, forcing the molecules to form bonds and coalesce into a liquid.", example:"Water vapor condenses back to liquid water to form clouds" },
+    freezing:      { label:"Freezing", def:"Transferring heat from a liquid to the surrounding area, forcing the molecules to reform and bond into a solid.", example:"Liquid mercury (Hg), poured into a mold, is solidified when poured with liquid nitrogen (N\u2082 (aq))" },
+    sublimation:   { label:"Sublimation", def:"Adding energy to a solid, dissipating it into a gas without transitioning through the liquid phase.", example:"Frozen carbon dioxide (CO\u2082, dry ice) sublimates into carbon dioxide gas at room temperature" },
+    deposition:    { label:"Deposition", def:"Transferring energy from gas molecules to the surrounding area, forcing them to combine and deposit as clumped gas molecules, reforming into a solid.", example:"Water vapor deposits as ice crystals when forming snowflakes" }
+  },
+  properties: {
+    physical:  { label:"Physical Property", def:"Can be quantified using measurements, or assessed by the five senses.", example:"Mass, color, length" },
+    chemical:  { label:"Chemical Property", def:"Assessed from the material's chemical structure, processes, and results.", example:"Flammability, toxicity, enthalpy" },
+    extensive: { label:"Extensive Property", def:"Dependent on the material's physical properties; changes accordingly if those properties change.", example:"Mass, area, length" },
+    intensive: { label:"Intensive Property", def:"Independent of the material's physical properties.", example:"Color, temperature, density" }
+  },
+  consumer: {
+    food:      { label:"Food Additives", def:"Substances added to food and/or beverages to improve flavor and appearance, and to preserve the food's natural taste." },
+    active:    { label:"Active Ingredients", def:"Substances that are biologically active, used mostly in pharmaceutical drugs and commodities like soap and powders." },
+    cleaning:  { label:"Cleaning Agents", def:"Substances used to remove dirt, dust, stains, clutter, and foul odor. They may also kill some harmful microorganisms in the cleaning process." },
+    cosmetics: { label:"Cosmetics", def:"Substances that enhance the consumer's appearance and improve their fragrance." }
+  },
+  contributors: {
+    eddington: { label:"Arthur Eddington (1920)", def:"The first to suggest that nuclear fusion reactions were taking place in stars." },
+    gamow:     { label:"George Gamow", def:"Developed a formula (the Gamow factor) to calculate the probability of fusion reactions taking place in stars." },
+    bethe:     { label:"Hans Bethe (1939)", def:"Proposed two processes that convert hydrogen into helium: the proton-proton cycle (in stars with a mass similar to the Sun) and the CNO cycle (in much more massive stars)." },
+    hoyle:     { label:"Fred Hoyle (1946)", def:"Suggested that even heavier nuclei, such as carbon and iron, are formed inside stars." },
+    cameron:   { label:"Cameron & Clayton", def:"Made corrections to Hoyle's theory and further explained the later stages of nucleosynthesis." }
+  },
+  nucleoTypes: {
+    explosive: { label:"Explosive (Supernova) Nucleosynthesis", def:"Takes place during the explosion of a star. Elements such as silicon and nickel are formed through fast fusion." },
+    cosmicray: { label:"Cosmic Ray Spallation", def:"Fast protons or cosmic rays collide with the interstellar medium, causing heavier nuclei (like carbon or oxygen) to fragment into lighter elements such as beryllium, boron, and lithium \u2014 making these elements more abundant than other nucleosynthesis processes would produce." }
+  },
+  reactionCycles: {
+    hydrogen:  { label:"Hydrogen Burning", def:"The first stage of stellar fusion, converting hydrogen into helium. In stars close to the Sun's mass, this happens through the proton-proton chain: two hydrogen atoms fuse into deuterium (releasing a positron and a neutrino), which fuses with another hydrogen to form Helium-3 and a gamma ray. Two Helium-3 nuclei then fuse into Helium-4, releasing two hydrogen atoms back. In more massive stars, hydrogen instead burns mainly through the CNO cycle, which uses carbon, nitrogen, and oxygen as catalysts to fuse four protons into a helium nucleus." },
+    helium:    { label:"Helium Burning", def:"The second stage, beginning once most of a star's hydrogen is burned \u2014 around when it becomes a Red Giant. Through the triple-alpha process, two helium-4 nuclei fuse into unstable beryllium-8, which quickly fuses with another helium nucleus to form carbon-12. Once carbon is present, further fusion can form neon, oxygen, and silicon." },
+    heavier:   { label:"Burning of Heavier Elements", def:"If a star is massive enough, it goes on to fuse carbon, neon, oxygen, and silicon, eventually forming elements up to iron." },
+    beyond:    { label:"Elements Heavier Than Iron", def:"Iron absorbs energy rather than releasing it, so once a star produces iron it can no longer sustain fusion and collapses under its own gravity. The star then explodes as a supernova, leaving behind a neutron star or (if massive enough) a black hole. Elements heavier than iron form through neutron capture and proton capture during this process." }
+  },
+  protostars: {
+    alpha: { label:"Protostar \u03b1 (Alpha)", def:"Some nebulae never finish becoming a star because a nearby, more massive star gets in the way. Jupiter is a good example \u2014 it's considered a \"failed star\" because its solid hydrogen core kept it from collecting enough gas to ever ignite fusion. If Jupiter had gathered more hydrogen, it could have become an alpha protostar, then a Brown Dwarf: a star with a mass between the smallest true stars and the densest gas giants. Brown dwarfs can't fuse hydrogen into other elements \u2014 instead they're thought to fuse hydrogen into deuterium, so their glow never reaches the visible spectrum." },
+    beta:  { label:"Protostar \u03b2 (Beta)", def:"If a nebula has enough mass to actually become a star, it passes through a beta protostar stage and becomes a Main Sequence star, like our Sun. Main-sequence stars burn slowly and steadily, giving more time for elements to form, until they swell into a Red Giant. Red giants use up their remaining helium to form heavier elements like iron. Once a red giant can no longer fuse heavier elements, its outer layers drift off as a planetary nebula (historically sometimes mistaken for a flickering planet at night). Once that nebula fades, what's left is a white dwarf \u2014 the star's core, which no longer forms new elements and simply dims until its last light goes out." },
+    gamma: { label:"Protostar \u03b3 (Gamma)", def:"Gamma protostars live fast and die young. They form from an extremely massive nebula that collapses under its own gravity, fusing hydrogen almost immediately and drawing in more mass to become a supergiant \u2014 glowing blue or red depending on how fast it fuses heavier elements. Because they burn through elements so quickly, these supergiants eventually collapse on themselves and explode as a bright supernova. What's left depends on the star's mass: 1.3 solar masses or less becomes a neutron star (a core made mostly of neutrons); above that limit, it collapses into a black hole \u2014 an object so dense that its gravity can trap even light." }
+  },
+  hydrogenChains: {
+    basic:    { label:"Basic Hydrogen Chain (\"proton-proton\")", def:"Some stars follow the standard proton-proton chain, but as soon as they form a helium-3 nucleus, it immediately fuses with more helium, releasing energy and creating beryllium. That beryllium is unstable, so it releases energy to settle into lithium instead. That lithium then fuses with another hydrogen atom, forming the helium that will go on to make beryllium again \u2014 and the cycle repeats." },
+    advanced: { label:"Advanced Hydrogen Chain", def:"Some stars push the chain further: they fuse that unstable beryllium with hydrogen to form boron, releasing even more energy. The boron is so unstable that it releases a positron (the electron's antimatter twin) plus energy trying to settle into beryllium again \u2014 but this new beryllium is even less stable than before, so it splits into two helium nuclei to finally reach stability." }
+  }
+};
+
+function showTerm(group, key){
+  const d = termData[group] && termData[group][key];
+  const display = document.getElementById('termDisplay-'+group);
+  if(!display || !d) return;
+  display.innerHTML = `<strong>${d.label}</strong> &mdash; ${d.def}${d.example ? `<br><br><em>Example: ${d.example}</em>` : ''}`;
+  document.querySelectorAll(`.term-btn[data-group="${group}"]`).forEach(b=>b.classList.toggle('active', b.dataset.term===key));
+}
+
+function toggleDrawer(open){
+  document.getElementById('drawer').classList.toggle('open', open);
+  document.getElementById('overlay').classList.toggle('show', open);
+}
+
+function goHome(){ state.view="home"; toggleDrawer(false); render(); }
+
+function openLesson(tIdx,lIdx){
+  state.view="lesson"; state.topicIndex=tIdx; state.lessonIndex=lIdx;
+  toggleDrawer(false); render();
+}
+
+function openQuiz(tIdx){
+  state.view="quiz"; state.topicIndex=tIdx; state.quizIndex=0;
+  state.selected=null; state.submitted=false; state.score=0;
+  toggleDrawer(false); render();
+}
+
+function markLessonDone(tIdx,lIdx){ state.completed.add(tIdx+"-lesson-"+lIdx); }
+function isLessonDone(tIdx,lIdx){ return state.completed.has(tIdx+"-lesson-"+lIdx); }
+function markQuizDone(tIdx){ state.completed.add(tIdx+"-quiz"); }
+function isQuizDone(tIdx){ return state.completed.has(tIdx+"-quiz"); }
+
+function nextFromLesson(){
+  const t = topics[state.topicIndex];
+  markLessonDone(state.topicIndex, state.lessonIndex);
+  if(state.lessonIndex < t.lessons.length-1){
+    state.lessonIndex++;
+  } else {
+    openQuiz(state.topicIndex); return;
+  }
+  render();
+}
+
+function prevFromLesson(){
+  if(state.lessonIndex>0){ state.lessonIndex--; render(); }
+  else { state.view="home"; render(); }
+}
+
+function selectChoice(i){
+  if(state.submitted) return;
+  state.selected = i; render();
+}
+
+function submitAnswer(){
+  if(state.selected===null) return;
+  state.submitted = true;
+  const q = topics[state.topicIndex].quiz[state.quizIndex];
+  if(state.selected === q.correct) state.score++;
+  render();
+}
+
+function nextQuestion(){
+  const quiz = topics[state.topicIndex].quiz;
+  if(state.quizIndex < quiz.length-1){
+    state.quizIndex++; state.selected=null; state.submitted=false; render();
+  } else {
+    markQuizDone(state.topicIndex);
+    state.view="result"; render();
+  }
+}
+
+function toggleTopic(i){
+  state.openTopic = (state.openTopic===i) ? -1 : i;
+  renderDrawer();
+}
+
+/* ---------------- Rendering ---------------- */
+function renderDrawer(){
+  const el = document.getElementById('drawerList');
+  el.innerHTML = topics.map((t,ti)=>{
+    const isActiveTopic = ti===state.topicIndex && state.view!=='home';
+    const items = t.lessons.map((l,li)=>{
+      const done = isLessonDone(ti,li);
+      const current = isActiveTopic && state.view==='lesson' && li===state.lessonIndex;
+      return `<div class="drawer-item ${current?'current':''}" onclick="openLesson(${ti},${li})">
+        ${done?'<span class="check">&#10003;</span>':(current?'<span class="dot-current"></span>':'<span class="dot-empty"></span>')}
+        ${l.title}
+      </div>`;
+    }).join('');
+    const quizDone = isQuizDone(ti);
+    const quizCurrent = isActiveTopic && (state.view==='quiz'||state.view==='result');
+    const quizItem = `<div class="drawer-item ${quizCurrent?'current':''}" onclick="openQuiz(${ti})">
+        ${quizDone?'<span class="check">&#10003;</span>':(quizCurrent?'<span class="dot-current"></span>':'<span class="dot-empty"></span>')}
+        Quiz
+      </div>`;
+    return `<div class="topic-block">
+      <div class="topic-head" onclick="toggleTopic(${ti})">
+        <span class="topic-dot ${isActiveTopic?'':'inactive'}"></span> ${t.title}
+      </div>
+      <div class="topic-items ${state.openTopic===ti?'show':''}">${items}${quizItem}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderHome(){
+  return `
+  <div class="hero">
+    <div class="worm-wrap">
+      <svg width="100%" height="140" viewBox="0 0 300 140" class="doodle" style="left:50%;transform:translateX(-50%);">
+        <text x="20" y="40" font-size="26" fill="#3F7255" opacity=".5">&#129440;</text>
+        <text x="240" y="110" font-size="24" fill="#4F86C6" opacity=".5">&#128301;</text>
+        <text x="130" y="30" font-size="22" fill="#F4B942" opacity=".6">&#10024;</text>
+        <text x="30" y="115" font-size="24" fill="#D6456C" opacity=".5">&#127793;</text>
+      </svg>
+      <svg width="150" height="120" viewBox="0 0 150 120" style="position:absolute;left:50%;top:0;transform:translateX(-50%);">
+        <ellipse cx="45" cy="90" rx="26" ry="20" fill="#8FC49A" stroke="#2C5940" stroke-width="3"/>
+        <ellipse cx="75" cy="75" rx="24" ry="19" fill="#A6D3AE" stroke="#2C5940" stroke-width="3"/>
+        <ellipse cx="102" cy="55" rx="22" ry="18" fill="#BFE0C6" stroke="#2C5940" stroke-width="3"/>
+        <circle cx="97" cy="50" r="3" fill="#2C5940"/>
+        <circle cx="109" cy="50" r="3" fill="#2C5940"/>
+        <path d="M95 60 Q103 65 111 60" stroke="#2C5940" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1>Welcome to Science Wormies</h1>
+    <p>Bite-sized science lessons and quick quizzes — pick a topic from the menu, or jump right in below.</p>
+    <button class="btn" onclick="openLesson(0,0)">Start exploring</button>
+  </div>
+  <div class="topics-preview">
+    ${topics.map((t,ti)=>`
+      <div class="preview-card" onclick="openLesson(${ti},0)">
+        <h3>${t.title}</h3>
+        <p>${t.lessons.length} lessons + 1 quiz</p>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderLesson(){
+  const t = topics[state.topicIndex];
+  const l = t.lessons[state.lessonIndex];
+  const isLast = state.lessonIndex === t.lessons.length-1;
+  return `
+  <div class="crumb">${t.title} &middot; ${l.title}</div>
+  <div class="lesson-card">
+    <h2>${l.title}</h2>
+    <div class="lesson-body">${l.content}</div>
+    <div class="nav-row">
+      <button class="btn ghost" onclick="prevFromLesson()">&larr; Back</button>
+      <button class="btn" onclick="nextFromLesson()">${isLast? 'Go to quiz' : 'Next lesson'} &rarr;</button>
+    </div>
+  </div>`;
+}
+
+function renderQuiz(){
+  const t = topics[state.topicIndex];
+  const q = t.quiz[state.quizIndex];
+  const choicesHtml = q.choices.map((c,i)=>{
+    let cls = 'choice';
+    if(state.submitted){
+      cls += ' disabled';
+      if(i===q.correct) cls += ' correct';
+      else if(i===state.selected) cls += ' wrong';
+    } else if(i===state.selected){
+      cls += ' selected';
+    }
+    return `<div class="${cls}" onclick="selectChoice(${i})">
+      <span class="choice-letter">${letters[i]}</span> ${c}
+    </div>`;
+  }).join('');
+
+  const feedback = state.submitted ? `
+    <div class="feedback ${state.selected===q.correct?'ok':'no'}">
+      ${state.selected===q.correct ? "That's correct! " : "Not quite. "}${q.explanation}
+    </div>` : '';
+
+  const actionBtn = state.submitted
+    ? `<button class="btn secondary" onclick="nextQuestion()">${state.quizIndex===t.quiz.length-1?'See results':'Next question'} &rarr;</button>`
+    : `<button class="btn" onclick="submitAnswer()">Submit</button>`;
+
+  return `
+  <div class="crumb">${t.title} &middot; Quiz</div>
+  <div class="quiz-card">
+    <div class="quiz-progress">Question ${state.quizIndex+1} of ${t.quiz.length}</div>
+    <div class="question">${q.question}</div>
+    ${choicesHtml}
+    ${feedback}
+    <div class="quiz-actions">${actionBtn}</div>
+  </div>`;
+}
+
+function renderResult(){
+  const t = topics[state.topicIndex];
+  return `
+  <div class="quiz-card result-card">
+    <h2>Nice work! &#127881;</h2>
+    <p>You finished the ${t.title} quiz.</p>
+    <div class="score-badge">${state.score} / ${t.quiz.length} correct</div><br>
+    <button class="btn" onclick="goHome()">Back to home</button>
+  </div>`;
+}
+
+function render(){
+  const main = document.getElementById('main');
+  if(state.view==='home') main.innerHTML = renderHome();
+  else if(state.view==='lesson') main.innerHTML = renderLesson();
+  else if(state.view==='quiz') main.innerHTML = renderQuiz();
+  else if(state.view==='result') main.innerHTML = renderResult();
+  renderDrawer();
+}
+
+render();
+</script>
+</body>
+</html>
